@@ -1,0 +1,5 @@
+# synmake
+config.yaml
+
+# Go
+coverage*
