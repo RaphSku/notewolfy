@@ -12,7 +12,7 @@ func NewVersionCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
 		Short: "Print the version of notewolfy.",
-		Long:  `This will show you the version of notewolfy in the format: {MAJOR}-{MINOR}-{PATCH}.`,
+		Long:  `This will show you the version of notewolfy in the format: v{MAJOR}.{MINOR}.{PATCH}`,
 		Run:   versionCommandFunc,
 	}
 }
