@@ -16,16 +16,21 @@ type CreateNodeStrategy struct {
 }
 
 func (cns *CreateNodeStrategy) Run() error {
-	nodeNameRegex := regexp.MustCompile("create node (?P<name>[\\w]+)")
+	nameCaptureGroupName := "name"
+	nodeNamePattern := "[\\w]+"
+	pattern := fmt.Sprintf("create node (?P<%s>%s)", nameCaptureGroupName, nodeNamePattern)
+	nodeNameRegex := regexp.MustCompile(pattern)
 	matches := nodeNameRegex.FindStringSubmatch(cns.statement)
+	if len(matches) != 2 {
+		return fmt.Errorf("\n\rPlease check whether the node name matches the regex %s!", nodeNamePattern)
+	}
 	names := nodeNameRegex.SubexpNames()
-	namedGroups := make(map[string]string)
-	for i, name := range names {
-		if i != 0 && name != "" {
-			namedGroups[name] = matches[i]
+	var nodeName string
+	for i, name := range names[1:] {
+		if name == nameCaptureGroupName {
+			nodeName = matches[i+1]
 		}
 	}
-	nodeName := namedGroups["name"]
 
 	activeNodeName := cns.mmf.ActiveNode
 	activeNode := cns.mmf.FindNode(activeNodeName)
@@ -62,23 +67,28 @@ type DeleteNodeStrategy struct {
 }
 
 func (dns *DeleteNodeStrategy) Run() error {
-	nodeNameRegex := regexp.MustCompile("delete node (?P<name>[\\w]+)")
+	nameCaptureGroupName := "name"
+	nodeNamePattern := "[\\w]+"
+	pattern := fmt.Sprintf("delete node (?P<%s>%s)", nameCaptureGroupName, nodeNamePattern)
+	nodeNameRegex := regexp.MustCompile(pattern)
 	matches := nodeNameRegex.FindStringSubmatch(dns.statement)
+	if len(matches) != 2 {
+		return fmt.Errorf("\n\rPlease check whether the node name matches the regex %s!", nodeNamePattern)
+	}
 	names := nodeNameRegex.SubexpNames()
-	namedGroups := make(map[string]string)
-	for i, name := range names {
-		if i != 0 && name != "" {
-			namedGroups[name] = matches[i]
+	var nodeName string
+	for i, name := range names[1:] {
+		if name == nameCaptureGroupName {
+			nodeName = matches[i+1]
 		}
 	}
-	nodeName := namedGroups["name"]
 
 	activeNodeName := dns.mmf.ActiveNode
 	activeNode := dns.mmf.FindNode(activeNodeName)
 	for index, child := range activeNode.Children {
 		if child.Name == nodeName {
 			if len(child.Markdowns) != 0 || len(child.Children) != 0 {
-				return fmt.Errorf("please delete all subsequent nodes and markdown files before deleting %s", nodeName)
+				return fmt.Errorf("Please delete all subsequent nodes and markdown files before deleting '%s'!", nodeName)
 			}
 
 			err := dns.mmf.DeleteChildByIndex(index)
@@ -94,9 +104,10 @@ func (dns *DeleteNodeStrategy) Run() error {
 			if err != nil {
 				return err
 			}
+			fmt.Printf("\n\rDeleted node '%s' successfully!", nodeName)
 			return nil
 		}
 	}
 
-	return fmt.Errorf("there is no node with the name %s", nodeName)
+	return fmt.Errorf("There is no node with the name '%s'!", nodeName)
 }

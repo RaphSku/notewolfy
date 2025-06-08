@@ -1,6 +1,6 @@
 module github.com/RaphSku/notewolfy
 
-go 1.22.5
+go 1.24.2
 
 require (
 	github.com/google/uuid v1.6.0
@@ -18,7 +18,7 @@ require (
 )
 
 require (
-	github.com/RaphSku/cyclecmd v0.1.0
+	github.com/RaphSku/cyclecmd v0.2.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/multierr v1.10.0 // indirect

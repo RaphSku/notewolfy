@@ -1,8 +1,6 @@
 package console
 
 import (
-	"context"
-
 	"github.com/RaphSku/cyclecmd"
 	"github.com/RaphSku/notewolfy/cmd/version"
 )
@@ -16,7 +14,7 @@ func getEventHistory() *cyclecmd.EventHistory {
 	return eventHistory
 }
 
-func StartConsoleApplication(ctx context.Context) {
+func StartConsoleApplication() {
 	defaultEventInformation := cyclecmd.EventInformation{
 		EventName: "Default",
 		Event:     &DefaultEvent{},
@@ -50,7 +48,6 @@ func StartConsoleApplication(ctx context.Context) {
 	eventHistory := getEventHistory()
 
 	consoleApp := cyclecmd.NewConsoleApp(
-		context.Background(),
 		"notewolfy",
 		version.VERSION,
 		"Creating organized notes is just easy with notewolfy",

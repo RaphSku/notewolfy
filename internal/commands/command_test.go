@@ -900,7 +900,7 @@ func TestMatchStatementToVersion(t *testing.T) {
 			})
 			assert.NoError(t, err)
 			if tc.want {
-				expContentString := "\n\rnotewolfy version v0.1.0 at your disposal!"
+				expContentString := "\n\rnotewolfy version v0.2.0 at your disposal!"
 				assert.Equal(t, expContentString, actOutput)
 
 				return
@@ -1060,7 +1060,7 @@ func TestMatchStatementToListWorkspaces(t *testing.T) {
 				assert.NoError(t, err)
 				workspaceNameA := tc.workspacePaths[0][2:]
 				workspaceNameB := tc.workspacePaths[1][2:]
-				expOutput := fmt.Sprintf("\r\nWorkspace Name                                                                                            Workspace Path                                                                                            \r\n---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n\rtestA                                                                                                     %[1]s/%[2]s\n\rtestB                                                                                                     %[1]s/%[3]s\n", basePath, workspaceNameA, workspaceNameB)
+				expOutput := fmt.Sprintf("\r\nWorkspace Name                                                                                              Workspace Path                                                                                          \r\n-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n\rtestA                                                                                                       %[1]s/%[2]s\n\rtestB                                                                                                       %[1]s/%[3]s\n", basePath, workspaceNameA, workspaceNameB)
 				assert.Equal(t, expOutput, actOutput)
 
 				return
@@ -1086,7 +1086,7 @@ func TestMatchStatementToHelp(t *testing.T) {
 		},
 		"error help command": {
 			statement: "help something",
-			expOutput: "",
+			expOutput: "\n\rYou need to specify a valid command, here is a list of possible commands:\n\r- ls\n\r- ls ws\n\r- create workspace\n\r- delete workspace\n\r- create node\n\r- delete node\n\r- create md\n\r- delete md\n\r- edit\n\r- goto\n\r- goback\n\r- open\n\r- version",
 		},
 	}
 

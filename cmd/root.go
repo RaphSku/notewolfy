@@ -1,49 +1,58 @@
 package cmd
 
 import (
-	"context"
+	"fmt"
 	"os"
 
 	"github.com/RaphSku/notewolfy/cmd/version"
 	"github.com/RaphSku/notewolfy/internal/console"
+	"github.com/RaphSku/notewolfy/internal/logging"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
 
 type CLI struct {
-	ctx    context.Context
 	logger *zap.Logger
 
 	rootCmd *cobra.Command
 }
 
-func NewCLI(ctx context.Context, logger *zap.Logger) *CLI {
+func NewCLI() *CLI {
+	return &CLI{}
+}
+
+func (cli *CLI) Run() {
 	rootCmd := &cobra.Command{
 		Use:   "notewolfy",
-		Short: "notewolfy a minimalistic note taking console application",
-		Long:  `notewolfy is a minimalistic note taking console application that allows you to organize and manage your markdown notes`,
-		Run: func(cmd *cobra.Command, args []string) {
-			console.StartConsoleApplication(ctx)
-		},
+		Short: "notewolfy, a minimalistic note taking console application!",
+		Long:  `notewolfy is a minimalistic note taking console application that allows you to organize and manage your markdown notes!`,
+		Run:   cli.runNotewolfyCommand,
 	}
 
+	// --- ROOT CMD
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
+	cli.rootCmd = rootCmd
 
-	return &CLI{
-		ctx:     ctx,
-		logger:  logger,
-		rootCmd: rootCmd,
-	}
-}
-
-func (cli *CLI) AddSubCommands() {
-	versionCmd := version.NewVersionCommand()
+	// --- SUB CMD
+	versionCmd := version.NewVersionCmd().GetVersionCmd()
 	cli.rootCmd.AddCommand(versionCmd)
+
+	// --- EXECUTE
+	if err := cli.rootCmd.Execute(); err != nil {
+		fmt.Printf("CLI failed to run due to %v\n", err)
+	}
 }
 
-func (cli *CLI) Execute() {
-	if err := cli.rootCmd.Execute(); err != nil {
-		cli.logger.Info("CLI failed to run", zap.Error(err))
-		os.Exit(1)
+func (cli *CLI) runNotewolfyCommand(cmd *cobra.Command, args []string) {
+	// if debugLevel = 1, then debug logs are shown to os.Stdout, otherwise no logs will be printed
+	debugLevel := os.Getenv("NOTEWOLFY_DEBUG")
+	var logger *zap.Logger
+	if debugLevel == "1" {
+		logger = logging.SetupZapLogger(true)
+	} else {
+		logger = logging.SetupZapLogger(false)
 	}
+	cli.logger = logger
+
+	console.StartConsoleApplication()
 }

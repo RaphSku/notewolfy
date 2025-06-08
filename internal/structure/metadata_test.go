@@ -403,7 +403,7 @@ func TestListWorkspaces(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	expOutput := "\r\nWorkspace NameWorkspace Path\r\n-----------------------------\n\rA             ./tmp/A       \n\rB             ./tmp/B       \n"
+	expOutput := "\r\nWorkspace Name                  Workspace Path              \r\n---------------------------------------------------------\n\rA                               ./tmp/A                     \n\rB                               ./tmp/B                     \n"
 	assert.Equal(t, expOutput, actOutput)
 }
 

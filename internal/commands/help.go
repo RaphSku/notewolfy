@@ -5,6 +5,24 @@ import (
 	"regexp"
 )
 
+var (
+	commands = []string{
+		"ls",
+		"ls ws",
+		"create workspace",
+		"delete workspace",
+		"create node",
+		"delete node",
+		"create md",
+		"delete md",
+		"edit",
+		"goto",
+		"goback",
+		"open",
+		"version",
+	}
+)
+
 type HelpStrategy struct {
 	statement string
 }
@@ -12,6 +30,13 @@ type HelpStrategy struct {
 func (hs *HelpStrategy) Run() error {
 	helpRegex := regexp.MustCompile("^help (?P<name>[[:alpha:]]+(?: [[:alpha:]]+)*)")
 	matches := helpRegex.FindStringSubmatch(hs.statement)
+	if len(matches) == 0 {
+		fmt.Print("\n\rYou need to specify a valid command, here is a list of possible commands:")
+		for _, command := range commands {
+			fmt.Printf("\n\r- %s", command)
+		}
+		return nil
+	}
 	names := helpRegex.SubexpNames()
 	namedGroups := make(map[string]string)
 	for i, name := range names {
@@ -57,6 +82,10 @@ func (hs *HelpStrategy) Run() error {
 		command = "\n\rCommand: delete md <markdownFileName>"
 		description = "\n\rDescription: delete md lets you delete the specified markdown file. Specify only the name, so without the file extension."
 		example = "\n\rExample Usage: delete md example"
+	case "edit":
+		command = "\n\rCommand: edit <markdownFileName>"
+		description = "\n\rDescription: edit md will open the specified markdown file in vim."
+		example = "\n\rExample usage: edit example"
 	case "goto":
 		command = "\n\rCommand: goto <nodeName>"
 		description = "\n\rDescription: goto will let you change the node, specify the name of the node that is a direct child of the node that you are on."
@@ -73,8 +102,13 @@ func (hs *HelpStrategy) Run() error {
 		command = "\n\rCommand: version"
 		description = "\n\rDescription: version will print notewolfy's version."
 		example = "\n\rExample Usage: version"
+	default:
+		fmt.Print("\n\rYou need to specify a valid command, here is a list of possible commands:")
+		for _, command := range commands {
+			fmt.Printf("\n\r- %s", command)
+		}
 	}
-	fmt.Printf(command + description + example)
+	fmt.Printf("%s%s%s", command, description, example)
 
 	return nil
 }
