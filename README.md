@@ -1,6 +1,6 @@
 # notewolfy
 ## Description
-notewolfy simplifies note-taking and organization into a straightforward tree-like structure. Currently, notewolfy supports note-taking through Markdown files via Vim. If you're unfamiliar with Vim, I recommend learning it before using notewolfy. Take notes of something noteworthy.
+notewolfy streamlines note-taking and organization using a simple, tree-like structure. It currently works with Markdown files through Vim. If you're not familiar with Vim, I recommend learning it first to get the most out of notewolfy. Use it to capture anything you find noteworthy.
 
 ## How to get it
 You can get notewolfy with the following command:
@@ -72,7 +72,7 @@ A bulk delete is currently not supported but if you want to delete the whole wor
 
 If you need help with a command, try to use
 ```bash
-help create workspace
+>>> help create workspace
 ```
 
 If you want to see the version of notewolfy that you are using, just use the following command
@@ -85,5 +85,7 @@ or inside of notewolfy
 ```
 there is also the version command available.
 
-## Supported OS
+## Supported OS & Terminal
 Only UNIX operating systems are supported. Sorry, no Windows for the time being.
+notewolfy has been tested on the following terminals:
+- bash

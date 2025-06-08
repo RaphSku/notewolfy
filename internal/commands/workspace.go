@@ -15,27 +15,39 @@ type CreateWorkspaceStrategy struct {
 }
 
 func (cws *CreateWorkspaceStrategy) Run() error {
-	pathRegex := regexp.MustCompile("[~.]{0,1}/.*")
-	workspacePath := pathRegex.FindAllString(cws.statement, 1)
-	if len(workspacePath) == 0 {
-		return nil
+	nameCaptureGroupName := "name"
+	pathCaptureGroupName := "path"
+	workspaceNamePattern := "[\\w]+"
+	workspacePathPattern := "[~.]{0,1}/{0,1}.*"
+	pattern := fmt.Sprintf("create workspace (?P<%s>%s) (?P<%s>%s)", nameCaptureGroupName, workspaceNamePattern, pathCaptureGroupName, workspacePathPattern)
+	regex := regexp.MustCompile(pattern)
+	matches := regex.FindStringSubmatch(cws.statement)
+	if len(matches) != 3 {
+		return fmt.Errorf("\n\rPlease check whether the workspace name matches the regex %s and whether the workspace path matches the regex %s!", workspaceNamePattern, workspacePathPattern)
 	}
-
-	workspaceNameRegex := regexp.MustCompile("create workspace (?P<name>[\\w]+) [~/.]{0,1}/.*")
-	matches := workspaceNameRegex.FindStringSubmatch(cws.statement)
-	names := workspaceNameRegex.SubexpNames()
-	namedGroups := make(map[string]string)
-	for i, name := range names {
-		if i != 0 && name != "" {
-			namedGroups[name] = matches[i]
+	names := regex.SubexpNames()
+	var workspaceName string
+	var workspacePath string
+	for i, name := range names[1:] {
+		if name == nameCaptureGroupName {
+			workspaceName = matches[i+1]
+		} else if name == pathCaptureGroupName {
+			workspacePath = matches[i+1]
 		}
 	}
-	workspaceName := namedGroups["name"]
 
-	pathToWorkspace, err := utility.ExpandRelativePaths(workspacePath[0])
+	pathToWorkspace, err := utility.ExpandRelativePaths(workspacePath)
 	if err != nil {
 		return err
 	}
+
+	fileInfo, err := os.Stat(pathToWorkspace)
+	if err == nil {
+		if fileInfo.IsDir() {
+			return fmt.Errorf("\n\rThe specified path %s already exists, please choose a valid path!", pathToWorkspace)
+		}
+	}
+
 	cws.mmf.AddNewWorkspace(workspaceName, pathToWorkspace)
 	cws.mmf.Save()
 
@@ -53,16 +65,21 @@ type DeleteWorkspaceStrategy struct {
 }
 
 func (dws *DeleteWorkspaceStrategy) Run() error {
-	workspaceNameRegex := regexp.MustCompile("delete workspace (?P<name>[\\w]+)")
+	nameCaptureGroupName := "name"
+	workspaceNamePattern := "[\\w]+"
+	pattern := fmt.Sprintf("delete workspace (?P<%s>%s)", nameCaptureGroupName, workspaceNamePattern)
+	workspaceNameRegex := regexp.MustCompile(pattern)
 	matches := workspaceNameRegex.FindStringSubmatch(dws.statement)
+	if len(matches) != 2 {
+		return fmt.Errorf("\n\rPlease check whether the workspace name matches the regex %s!", workspaceNamePattern)
+	}
 	names := workspaceNameRegex.SubexpNames()
-	namedGroups := make(map[string]string)
-	for i, name := range names {
-		if i != 0 && name != "" {
-			namedGroups[name] = matches[i]
+	var workspaceName string
+	for i, name := range names[1:] {
+		if name == nameCaptureGroupName {
+			workspaceName = matches[i+1]
 		}
 	}
-	workspaceName := namedGroups["name"]
 
 	foundIndex := -1
 	for index, workspace := range dws.mmf.Workspaces {
@@ -71,11 +88,11 @@ func (dws *DeleteWorkspaceStrategy) Run() error {
 		}
 	}
 	if foundIndex == -1 {
-		return fmt.Errorf("workspace %s could not be found!", workspaceName)
+		return fmt.Errorf("\n\rWorkspace '%s' could not be found!", workspaceName)
 	}
 
 	if len(dws.mmf.Workspaces[foundIndex].Children) != 0 || len(dws.mmf.Workspaces[foundIndex].Markdowns) != 0 {
-		return fmt.Errorf("before you delete a workspace, ensure that you have deleted all nodes and markdown files in this workspace!")
+		return fmt.Errorf("\n\rBefore you delete a workspace, ensure that you have deleted all nodes and markdown files in this workspace!")
 	}
 
 	workspacePath := dws.mmf.Workspaces[foundIndex].Path
@@ -92,8 +109,9 @@ func (dws *DeleteWorkspaceStrategy) Run() error {
 
 	err := os.Remove(workspacePath)
 	if err != nil {
-		return fmt.Errorf("the workspace %s could not be deleted, please clean up the following workspace path yourself: %s, error: %v", workspaceName, workspacePath, err)
+		return fmt.Errorf("\n\rThe workspace '%s' could not be deleted, please clean up the following workspace path yourself: %s, error: %v", workspaceName, workspacePath, err)
 	}
+	fmt.Printf("\n\rDeleted workspace '%s' successfully!", workspaceName)
 
 	return nil
 }

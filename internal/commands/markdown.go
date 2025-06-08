@@ -17,16 +17,21 @@ type CreateMarkdownStrategy struct {
 }
 
 func (cms *CreateMarkdownStrategy) Run() error {
-	markdownNameRegex := regexp.MustCompile("create md (?P<name>[\\w]+)")
+	nameCaptureGroupName := "name"
+	markdownNamePattern := "[\\w]+"
+	pattern := fmt.Sprintf("create md (?P<%s>%s)", nameCaptureGroupName, markdownNamePattern)
+	markdownNameRegex := regexp.MustCompile(pattern)
 	matches := markdownNameRegex.FindStringSubmatch(cms.statement)
+	if len(matches) != 2 {
+		return fmt.Errorf("\n\rPlease check whether the markdown name matches the regex %s!", markdownNamePattern)
+	}
 	names := markdownNameRegex.SubexpNames()
-	namedGroups := make(map[string]string)
-	for i, name := range names {
-		if i != 0 && name != "" {
-			namedGroups[name] = matches[i]
+	var markdownName string
+	for i, name := range names[1:] {
+		if name == nameCaptureGroupName {
+			markdownName = matches[i+1]
 		}
 	}
-	markdownName := namedGroups["name"]
 	markdownNameWithFExt := strings.Join([]string{markdownName, ".md"}, "")
 	activeNodeName := cms.mmf.ActiveNode
 	activeNode := cms.mmf.FindNode(activeNodeName)
@@ -49,9 +54,7 @@ func (cms *CreateMarkdownStrategy) Run() error {
 		return nil
 	}
 
-	fmt.Println("\r\nMarkdown file already exists!")
-
-	return nil
+	return fmt.Errorf("\r\nMarkdown file already exists!")
 }
 
 type DeleteMDStrategy struct {
@@ -60,16 +63,21 @@ type DeleteMDStrategy struct {
 }
 
 func (dms *DeleteMDStrategy) Run() error {
-	markdownNameRegex := regexp.MustCompile("delete md (?P<name>[\\w]+)")
+	nameCaptureGroupName := "name"
+	markdownNamePattern := "[\\w]+"
+	pattern := fmt.Sprintf("delete md (?P<%s>%s)", nameCaptureGroupName, markdownNamePattern)
+	markdownNameRegex := regexp.MustCompile(pattern)
 	matches := markdownNameRegex.FindStringSubmatch(dms.statement)
+	if len(matches) != 2 {
+		return fmt.Errorf("\n\rPlease check whether the markdown name matches the regex %s!", markdownNamePattern)
+	}
 	names := markdownNameRegex.SubexpNames()
-	namedGroups := make(map[string]string)
-	for i, name := range names {
-		if i != 0 && name != "" {
-			namedGroups[name] = matches[i]
+	var markdownName string
+	for i, name := range names[1:] {
+		if name == nameCaptureGroupName {
+			markdownName = matches[i+1]
 		}
 	}
-	markdownName := namedGroups["name"]
 
 	activeNodeName := dms.mmf.ActiveNode
 	activeNode := dms.mmf.FindNode(activeNodeName)
@@ -93,23 +101,28 @@ type EditStrategy struct {
 }
 
 func (es *EditStrategy) Run() error {
-	markdownNameRegex := regexp.MustCompile("edit (?P<name>[\\w]+)")
+	nameCaptureGroupName := "name"
+	markdownNamePattern := "[\\w]+"
+	pattern := fmt.Sprintf("edit (?P<%s>%s)", nameCaptureGroupName, markdownNamePattern)
+	markdownNameRegex := regexp.MustCompile(pattern)
 	matches := markdownNameRegex.FindStringSubmatch(es.statement)
+	if len(matches) != 2 {
+		return fmt.Errorf("\n\rPlease check whether the markdown name matches the regex %s!", markdownNamePattern)
+	}
 	names := markdownNameRegex.SubexpNames()
-	namedGroups := make(map[string]string)
-	for i, name := range names {
-		if i != 0 && name != "" {
-			namedGroups[name] = matches[i]
+	var markdownName string
+	for i, name := range names[1:] {
+		if name == nameCaptureGroupName {
+			markdownName = matches[i+1]
 		}
 	}
-	markdownName := namedGroups["name"]
 	activeNodeName := es.mmf.ActiveNode
 	activeNode := es.mmf.FindNode(activeNodeName)
 	for _, markdown := range activeNode.Markdowns {
 		if markdown.Filename[:len(markdown.Filename)-3] == markdownName {
 			markdownFile := filepath.Join(activeNode.Path, markdown.Filename)
 
-			cmd := exec.Command("vi", markdownFile)
+			cmd := exec.Command("vim", markdownFile)
 			cmd.Stdin = os.Stdin
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr

@@ -13,16 +13,21 @@ type GoToStrategy struct {
 }
 
 func (gts *GoToStrategy) Run() error {
-	goToRegex := regexp.MustCompile("goto (?P<name>[[:alpha:]]+)")
+	nameCaptureGroupName := "name"
+	nodeNamePattern := "[\\w]+"
+	pattern := fmt.Sprintf("goto (?P<%s>%s)", nameCaptureGroupName, nodeNamePattern)
+	goToRegex := regexp.MustCompile(pattern)
 	matches := goToRegex.FindStringSubmatch(gts.statement)
+	if len(matches) != 2 {
+		return fmt.Errorf("\n\rPlease check whether the node matches the regex %s!", nodeNamePattern)
+	}
 	names := goToRegex.SubexpNames()
-	namedGroups := make(map[string]string)
-	for i, name := range names {
-		if i != 0 && name != "" {
-			namedGroups[name] = matches[i]
+	var goToName string
+	for i, name := range names[1:] {
+		if name == nameCaptureGroupName {
+			goToName = matches[i+1]
 		}
 	}
-	goToName := namedGroups["name"]
 
 	activeNodeName := gts.mmf.ActiveNode
 	activeNode := gts.mmf.FindNode(activeNodeName)
@@ -34,7 +39,5 @@ func (gts *GoToStrategy) Run() error {
 		}
 	}
 
-	fmt.Println("\r\nCould not find node ", goToName)
-
-	return nil
+	return fmt.Errorf("\r\nCould not find node '%s'!", goToName)
 }

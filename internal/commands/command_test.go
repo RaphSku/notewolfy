@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/RaphSku/notewolfy/internal/commands"
@@ -900,7 +901,7 @@ func TestMatchStatementToVersion(t *testing.T) {
 			})
 			assert.NoError(t, err)
 			if tc.want {
-				expContentString := "\n\rnotewolfy version v0.1.0 at your disposal!"
+				expContentString := "\n\rnotewolfy version v0.2.0 at your disposal!"
 				assert.Equal(t, expContentString, actOutput)
 
 				return
@@ -1056,11 +1057,24 @@ func TestMatchStatementToListWorkspaces(t *testing.T) {
 			})
 			assert.NoError(t, err)
 			if tc.want {
-				basePath, err := utility.ExpandRelativePaths("./")
-				assert.NoError(t, err)
-				workspaceNameA := tc.workspacePaths[0][2:]
-				workspaceNameB := tc.workspacePaths[1][2:]
-				expOutput := fmt.Sprintf("\r\nWorkspace Name                                                                                            Workspace Path                                                                                            \r\n---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n\rtestA                                                                                                     %[1]s/%[2]s\n\rtestB                                                                                                     %[1]s/%[3]s\n", basePath, workspaceNameA, workspaceNameB)
+				workspaceNameA := workspaceNodeA.Name
+				workspaceNameB := workspaceNodeB.Name
+				maximumLength := 2 * len("Workspace Name")
+				if len(workspaceNameA) > maximumLength {
+					maximumLength = len(workspaceNameA)
+				}
+				if len(workspaceNameB) > maximumLength {
+					maximumLength = len(workspaceNameB)
+				}
+				if len(workspacePathA) > maximumLength {
+					maximumLength = len(workspacePathA)
+				}
+				if len(workspacePathB) > maximumLength {
+					maximumLength = len(workspacePathB)
+				}
+				totalWidth := 2*(maximumLength) + 1
+
+				expOutput := fmt.Sprintf(fmt.Sprintf("\r\n%%-%[1]d.%[1]ds    %%-%[1]d.%[1]ds", maximumLength), "Workspace Name", "Workspace Path") + fmt.Sprintf("\r\n%s\n", strings.Repeat("-", totalWidth)) + fmt.Sprintf(fmt.Sprintf("\r%%-%[1]d.%[1]ds    %%-%[1]d.%[1]ds\n", maximumLength), workspaceNameA, workspacePathA) + fmt.Sprintf(fmt.Sprintf("\r%%-%[1]d.%[1]ds    %%-%[1]d.%[1]ds\n", maximumLength), workspaceNameB, workspacePathB)
 				assert.Equal(t, expOutput, actOutput)
 
 				return
@@ -1086,7 +1100,7 @@ func TestMatchStatementToHelp(t *testing.T) {
 		},
 		"error help command": {
 			statement: "help something",
-			expOutput: "",
+			expOutput: "\n\rYou need to specify a valid command, here is a list of possible commands:\n\r- ls\n\r- ls ws\n\r- create workspace\n\r- delete workspace\n\r- create node\n\r- delete node\n\r- create md\n\r- delete md\n\r- edit\n\r- goto\n\r- goback\n\r- open\n\r- version",
 		},
 	}
 

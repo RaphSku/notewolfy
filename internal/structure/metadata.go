@@ -157,7 +157,7 @@ func (mmf *MetadataNoteWolfyFileHandle) DeleteMarkdown(markdownName string) erro
 }
 
 func (mmf *MetadataNoteWolfyFileHandle) ListWorkspaces() {
-	longestStringLength := len("Workspace Name")
+	longestStringLength := 2 * len("Workspace Name")
 	for _, workspace := range mmf.Workspaces {
 		workspaceNameLength := len(workspace.Name)
 		if workspaceNameLength > longestStringLength {
@@ -169,11 +169,11 @@ func (mmf *MetadataNoteWolfyFileHandle) ListWorkspaces() {
 		}
 	}
 
-	fmt.Printf(fmt.Sprintf("\r\n%%-%[1]d.%[1]ds%%-%[1]d.%[1]ds", longestStringLength), "Workspace Name", "Workspace Path")
+	fmt.Printf(fmt.Sprintf("\r\n%%-%[1]d.%[1]ds    %%-%[1]d.%[1]ds", longestStringLength), "Workspace Name", "Workspace Path")
 	totalWidth := 2*longestStringLength + 1
 	fmt.Printf("\r\n%s\n", strings.Repeat("-", totalWidth))
 	for _, workspace := range mmf.Workspaces {
-		fmt.Printf(fmt.Sprintf("\r%%-%[1]d.%[1]ds%%-%[1]d.%[1]ds\n", longestStringLength), workspace.Name, workspace.Path)
+		fmt.Printf(fmt.Sprintf("\r%%-%[1]d.%[1]ds    %%-%[1]d.%[1]ds\n", longestStringLength), workspace.Name, workspace.Path)
 	}
 }
 

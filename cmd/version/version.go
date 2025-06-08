@@ -6,17 +6,25 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const VERSION = "v0.1.0"
+const VERSION = "v0.2.0"
 
-func NewVersionCommand() *cobra.Command {
-	return &cobra.Command{
-		Use:   "version",
-		Short: "Print the version of notewolfy.",
-		Long:  `This will show you the version of notewolfy in the format: v{MAJOR}.{MINOR}.{PATCH}`,
-		Run:   versionCommandFunc,
-	}
+type VersionCmd struct{}
+
+func NewVersionCmd() *VersionCmd {
+	return &VersionCmd{}
 }
 
-func versionCommandFunc(cmd *cobra.Command, args []string) {
+func (vc *VersionCmd) GetVersionCmd() *cobra.Command {
+	versionCmd := &cobra.Command{
+		Use:   "version",
+		Short: "Prints the version number of notewolfy.",
+		Long:  `This will show you the version of notewolfy in the format: v{MAJOR}.{MINOR}.{PATCH}.`,
+		Run:   vc.runVersionCmd,
+	}
+
+	return versionCmd
+}
+
+func (vc *VersionCmd) runVersionCmd(cmd *cobra.Command, args []string) {
 	fmt.Println(VERSION)
 }
