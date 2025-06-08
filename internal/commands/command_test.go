@@ -1057,10 +1057,8 @@ func TestMatchStatementToListWorkspaces(t *testing.T) {
 			})
 			assert.NoError(t, err)
 			if tc.want {
-				basePath, err := utility.ExpandRelativePaths("./")
-				assert.NoError(t, err)
-				workspaceNameA := tc.workspacePaths[0][2:]
-				workspaceNameB := tc.workspacePaths[1][2:]
+				workspaceNameA := workspaceNodeA.Name
+				workspaceNameB := workspaceNodeB.Name
 				maximumLength := 2 * len("Workspace Name")
 				if len(workspaceNameA) > maximumLength {
 					maximumLength = len(workspaceNameA)
@@ -1075,7 +1073,8 @@ func TestMatchStatementToListWorkspaces(t *testing.T) {
 					maximumLength = len(workspacePathB)
 				}
 				totalWidth := 2*(maximumLength) + 1
-				expOutput := fmt.Sprintf("\r\nWorkspace Name                                                                                              Workspace Path                                                                                          \r\n%[4]s\n\rtestA                                                                                                       %[1]s/%[2]s\n\rtestB                                                                                                       %[1]s/%[3]s\n", basePath, workspaceNameA, workspaceNameB, strings.Repeat("-", totalWidth))
+
+				expOutput := fmt.Sprintf(fmt.Sprintf("\r\n%%-%[1]d.%[1]ds    %%-%[1]d.%[1]ds", maximumLength), "Workspace Name", "Workspace Path") + fmt.Sprintf("\r\n%s\n", strings.Repeat("-", totalWidth)) + fmt.Sprintf(fmt.Sprintf("\r%%-%[1]d.%[1]ds    %%-%[1]d.%[1]ds\n", maximumLength), workspaceNameA, workspacePathA) + fmt.Sprintf(fmt.Sprintf("\r%%-%[1]d.%[1]ds    %%-%[1]d.%[1]ds\n", maximumLength), workspaceNameB, workspacePathB)
 				assert.Equal(t, expOutput, actOutput)
 
 				return
