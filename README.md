@@ -72,7 +72,7 @@ A bulk delete is currently not supported but if you want to delete the whole wor
 
 If you need help with a command, try to use
 ```bash
-help create workspace
+>>> help create workspace
 ```
 
 If you want to see the version of notewolfy that you are using, just use the following command

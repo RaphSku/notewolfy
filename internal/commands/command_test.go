@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/RaphSku/notewolfy/internal/commands"
@@ -1060,7 +1061,21 @@ func TestMatchStatementToListWorkspaces(t *testing.T) {
 				assert.NoError(t, err)
 				workspaceNameA := tc.workspacePaths[0][2:]
 				workspaceNameB := tc.workspacePaths[1][2:]
-				expOutput := fmt.Sprintf("\r\nWorkspace Name                                                                                              Workspace Path                                                                                          \r\n-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n\rtestA                                                                                                       %[1]s/%[2]s\n\rtestB                                                                                                       %[1]s/%[3]s\n", basePath, workspaceNameA, workspaceNameB)
+				maximumLength := 2 * len("Workspace Name")
+				if len(workspaceNameA) > maximumLength {
+					maximumLength = len(workspaceNameA)
+				}
+				if len(workspaceNameB) > maximumLength {
+					maximumLength = len(workspaceNameB)
+				}
+				if len(workspacePathA) > maximumLength {
+					maximumLength = len(workspacePathA)
+				}
+				if len(workspacePathB) > maximumLength {
+					maximumLength = len(workspacePathB)
+				}
+				totalWidth := 2*(maximumLength) + 1
+				expOutput := fmt.Sprintf("\r\nWorkspace Name                                                                                              Workspace Path                                                                                          \r\n%[4]s\n\rtestA                                                                                                       %[1]s/%[2]s\n\rtestB                                                                                                       %[1]s/%[3]s\n", basePath, workspaceNameA, workspaceNameB, strings.Repeat("-", totalWidth))
 				assert.Equal(t, expOutput, actOutput)
 
 				return
